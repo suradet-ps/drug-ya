@@ -191,6 +191,11 @@ WASM build of the Leptos frontend. A separate test-build job compiles the
 Tauri app, and tagged releases are published for Windows, Linux, and macOS.
 [Watch the gates](.github/workflows).
 
+**Security** - report vulnerabilities privately through
+[`SECURITY.md`](SECURITY.md). Secret scanning layers, GitGuardian setup, and
+the `ggshield` workflow live in
+[`docs/security-scanning.md`](docs/security-scanning.md).
+
 ---
 
 ## ◆ LIMITS

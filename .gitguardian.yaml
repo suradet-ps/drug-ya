@@ -1,0 +1,44 @@
+# GitGuardian / ggshield configuration.
+#
+# This file is read by ggshield, the GitGuardian command-line scanner. It does
+# not configure the GitGuardian dashboard, the GitGuardian GitHub App, or
+# GitHub native secret scanning. Configure those on the server side.
+#
+# Local scan:
+#   ggshield secret scan path -r .
+#   ggshield secret scan repo .
+#
+# See docs/security-scanning.md.
+
+version: 2
+
+# Do not turn a detected secret into a successful exit code.
+exit_zero: false
+verbose: false
+
+secret:
+  # Never print a detected secret value to the terminal or CI logs.
+  show_secrets: false
+
+  # Build output and generated files are never committed. Keep this list
+  # narrow: do not exclude source, docs, or configuration directories.
+  ignored_paths:
+    - 'target/**'
+    - 'apps/drug-ya-app/frontend/dist/**'
+    - 'apps/drug-ya-app/gen/**'
+    - '**/node_modules/**'
+    - '**/.trunk/**'
+
+  # Synthetic values used by unit tests. Prefer changing a fixture over
+  # adding an entry here; each entry must name why the value is safe.
+  ignored_matches:
+    - name: 'synthetic database password in drug-ya-config tests'
+      match: 'sup3r-s3cret'
+    - name: 'synthetic legacy password in drug-ya-config migration tests'
+      match: 'legacy-pass'
+    - name: 'synthetic redaction password in drug-ya-hosxp config tests'
+      match: 'super-secret'
+    - name: 'synthetic Unicode password in drug-ya-config round-trip tests'
+      match: 'พาสเวิร์ด! 🔐 x$y%'
+    - name: 'MD5 test fixture for the string drug-ya-test'
+      match: '0e4a1d1e4d3a8d1d2a1c4f5e6b7a8c9d'

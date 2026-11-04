@@ -1,8 +1,49 @@
-target/
-dist/
-node_modules/
+# Rust
+/target/
+**/target/
+Cargo.lock.bak
+
+# Tauri and generated frontend output
 apps/drug-ya-app/gen/
-*.log
+apps/drug-ya-app/frontend/dist/
+dist/
+.trunk/
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Local settings and private fixtures
+*.settings.json
+*.connection.json
+test-data/
+fixtures/private/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
-.env
+desktop.ini
+
+# Logs, coverage, and local database dumps
+*.log
+coverage/
+lcov.info
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.orig
+*.rej
+.history/

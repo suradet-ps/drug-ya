@@ -1,0 +1,19 @@
+# Optional local secret guard.
+#
+# Install once:
+#   pipx install pre-commit ggshield
+#   ggshield auth login
+#   pre-commit install
+#
+# The hook uses the local ggshield binary, so it never downloads a moving
+# target. It is optional: contributors who do not install pre-commit are not
+# blocked, and CI still relies on GitHub secret scanning and GitGuardian.
+repos:
+  - repo: local
+    hooks:
+      - id: ggshield
+        name: GitGuardian secret scan (staged changes)
+        entry: ggshield secret scan pre-commit
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
