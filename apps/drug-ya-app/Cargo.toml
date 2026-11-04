@@ -1,0 +1,26 @@
+[package]
+name = "drug-ya-app"
+description = "Drug-Ya desktop shell: Tauri 2 backend serving the Leptos review console"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+drug-ya-core = { workspace = true }
+drug-ya-config = { workspace = true }
+drug-ya-hosxp = { workspace = true }
+tauri = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+secrecy = { workspace = true }
+encryptman = { workspace = true }
+sqlx = { workspace = true }

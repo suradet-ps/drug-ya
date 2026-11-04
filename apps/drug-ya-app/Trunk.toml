@@ -1,0 +1,4 @@
+# Trunk config for the Drug-Ya frontend.
+[build]
+target = "frontend/index.html"
+dist = "frontend/dist"

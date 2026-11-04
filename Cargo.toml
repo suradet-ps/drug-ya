@@ -1,0 +1,57 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/drug-ya-core",
+    "crates/drug-ya-config",
+    "crates/drug-ya-bridge",
+    "crates/drug-ya-hosxp",
+    "apps/drug-ya-app",
+    "apps/drug-ya-app/frontend",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/suradet-ps/drug-ya"
+authors = ["suradet-ps"]
+
+[workspace.dependencies]
+drug-ya-core = { path = "crates/drug-ya-core" }
+drug-ya-config = { path = "crates/drug-ya-config" }
+drug-ya-bridge = { path = "crates/drug-ya-bridge" }
+drug-ya-hosxp = { path = "crates/drug-ya-hosxp" }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2"
+chrono = { version = "0.4", default-features = false, features = ["serde", "std", "clock", "wasm-bindgen"] }
+secrecy = { version = "0.10", features = ["serde"] }
+md-5 = "0.10"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+directories = "6.0"
+encryptman = "0.5.0"
+encryptman-keyring = "0.1.3"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "mysql", "chrono", "derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"] }
+tauri = { version = "2", features = [] }
+tauri-build = "2"
+leptos = "0.8"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = "0.3"
+
+[profile.dev]
+incremental = true
+opt-level = 2
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+# Keep the wasm `target_features` custom section for wasm-bindgen; strip only
+# debug info. Full stripping is left to the platform packager.
+strip = "debuginfo"

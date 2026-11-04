@@ -1,0 +1,17 @@
+[package]
+name = "drug-ya-hosxp"
+description = "The only Drug-Ya crate allowed to talk to HOSxP MySQL: read-only queries and review dataset assembly"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+drug-ya-core = { workspace = true }
+secrecy = { workspace = true }
+sqlx = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
