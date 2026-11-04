@@ -20,11 +20,12 @@
     "windows": [
       {
         "title": "Drug-Ya - ตรวจคำสั่งยา",
-        "width": 1440,
-        "height": 900,
-        "minWidth": 1100,
-        "minHeight": 700,
+        "width": 1200,
+        "height": 640,
+        "minWidth": 960,
+        "minHeight": 600,
         "center": true,
+        "preventOverflow": true,
         "visible": false
       }
     ],
