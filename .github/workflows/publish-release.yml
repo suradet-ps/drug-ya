@@ -35,6 +35,7 @@ jobs:
     name: Publish ${{ matrix.platform }}
     needs: cargo-audit
     permissions:
+      # tauri-action creates the GitHub release and uploads the build assets.
       contents: write
     strategy:
       fail-fast: false
@@ -74,6 +75,8 @@ jobs:
 
       - name: Install Trunk
         shell: bash
+        env:
+          TRUNK_ARTIFACT: ${{ matrix.trunk-artifact }}
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
             CURL=curl.exe
@@ -84,7 +87,7 @@ jobs:
           fi
           for attempt in 1 2 3 4; do
             $CURL -LsSf \
-              "https://github.com/trunk-rs/trunk/releases/download/v0.21.14/${{ matrix.trunk-artifact }}" \
+              "https://github.com/trunk-rs/trunk/releases/download/v0.21.14/$TRUNK_ARTIFACT" \
               -o "$ARCHIVE" \
               && mkdir -p "$HOME/.cargo/bin" \
               && if [ "$RUNNER_OS" = "Windows" ]; then
