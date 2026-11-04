@@ -156,6 +156,15 @@ Limitations:
 - Dose is estimated from `drugitems.strength` × sig frequency. If the sig,
   strength, or units cannot be parsed, the app reports "cannot estimate" and
   does not guess.
+- Days supply is **derived**, not stored by HOSxP. It is shown only when the
+  sig states a dose per administration and a daily frequency, for example
+  `ครั้งละ 2 เม็ด · วันละ 1 ครั้ง` → 2 units/day. Thai dose forms such as
+  `ครั้งละ ครึ่ง เม็ด`, `ครั้งละ 1/2 เม็ด`, `วันละ 2 ครั้ง`, `วันละ 2 เวลา`,
+  and scheduled `ก่อนนอน` are supported.
+- A PRN or conditional sig such as `ก่อนนอน · เวลานอนไม่หลับ` is not given a
+  numeric days estimate; the UI shows `ตามอาการ`. A missing frequency shows
+  `ไม่ระบุความถี่`, and an unparsed dose shows `อ่านไม่ชัด`. The number is
+  always prefixed with `~` and is an estimate, not a guarantee of use.
 - Liquids are only converted when the sig states a volume unit; "1x3" for a
   liquid is treated as ambiguous.
 - Injections and non-solid forms are not assessed for mg/day.

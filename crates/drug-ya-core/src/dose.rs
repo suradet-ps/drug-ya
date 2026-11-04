@@ -18,6 +18,8 @@ pub struct DoseEstimate {
     pub mg_per_day: Option<f64>,
     /// Days supply derived from qty / units-per-day.
     pub days_supply: Option<f64>,
+    /// Short reason when a days-supply estimate is not available.
+    pub days_supply_note: String,
     /// Thai explanation for the UI.
     pub note: String,
 }
@@ -28,8 +30,14 @@ pub fn estimate_dose(strength: &str, units: &str, sig: &str, qty: f64) -> DoseEs
     let sig_info = parse_sig(sig);
     let unit_kind = classify_units(units, &strength_info);
 
-    let units_per_day = sig_info
-        .dose_units
+    // Liquid sigs are expressed in spoons or mL. A spoon must be converted to
+    // its mL volume before dividing the dispensed quantity; "1x3" for a liquid
+    // remains ambiguous and gets no days estimate.
+    let per_day_quantity = match unit_kind {
+        UnitKind::Solid | UnitKind::NonSolid => sig_info.dose_units,
+        UnitKind::Liquid => sig_info.volume_ml_per_dose,
+    };
+    let units_per_day = per_day_quantity
         .zip(sig_info.times_per_day)
         .map(|(dose, freq)| dose * freq)
         .filter(|v| v.is_finite() && *v > 0.0);
@@ -42,26 +50,35 @@ pub fn estimate_dose(strength: &str, units: &str, sig: &str, qty: f64) -> DoseEs
     let mg_per_day = if let Some(per_day) = units_per_day {
         match unit_kind {
             UnitKind::Solid => strength_info.mg_per_unit.map(|mg| per_day * mg),
-            UnitKind::Liquid => {
-                // Only convert when the sig clearly states a volume unit;
-                // otherwise a "1x3" liquid order could mean 1 teaspoon,
-                // 1 mL, or 1 capful.
-                strength_info.mg_per_ml.and_then(|mg_per_ml| {
-                    sig_info.volume_ml_per_dose.and_then(|ml| {
-                        sig_info
-                            .dose_units
-                            .map(|dose| ml * (per_day / dose) * mg_per_ml)
-                    })
-                })
-            }
+            UnitKind::Liquid => strength_info.mg_per_ml.map(|mg_per_ml| per_day * mg_per_ml),
             UnitKind::NonSolid => None,
         }
     } else {
         None
     };
 
+    let days_supply_note = if days_supply.is_some() {
+        String::new()
+    } else if sig.trim().is_empty() {
+        "ไม่มีวิธีใช้".to_string()
+    } else if sig_info.prn && sig_info.times_per_day.is_none() {
+        "ตามอาการ".to_string()
+    } else if sig_info.times_per_day.is_none() {
+        "ไม่ระบุความถี่".to_string()
+    } else if matches!(unit_kind, UnitKind::Liquid) && sig_info.volume_ml_per_dose.is_none() {
+        "ไม่ระบุปริมาตร".to_string()
+    } else {
+        "อ่านไม่ชัด".to_string()
+    };
+
     let note = if sig.trim().is_empty() {
         "ไม่มีข้อความวิธีใช้ (sig) ใน HOSxP".to_string()
+    } else if sig_info.prn && sig_info.times_per_day.is_none() {
+        "ใช้ตามอาการ; ไม่ระบุความถี่ในวิธีใช้".to_string()
+    } else if sig_info.times_per_day.is_none() {
+        format!("ไม่ระบุความถี่ในวิธีใช้: {}", sig.trim())
+    } else if matches!(unit_kind, UnitKind::Liquid) && sig_info.volume_ml_per_dose.is_none() {
+        "ยาน้ำ: ไม่ระบุปริมาตรต่อครั้ง; ประเมินจำนวนวันไม่ได้".to_string()
     } else if units_per_day.is_none() {
         format!("อ่านวิธีใช้ไม่ชัด: {}", sig.trim())
     } else if matches!(unit_kind, UnitKind::Liquid) && mg_per_day.is_none() {
@@ -86,6 +103,7 @@ pub fn estimate_dose(strength: &str, units: &str, sig: &str, qty: f64) -> DoseEs
         units_per_day,
         mg_per_day,
         days_supply,
+        days_supply_note,
         note,
     }
 }
@@ -226,7 +244,18 @@ fn parse_sig(raw: &str) -> SigInfo {
     let mut info = SigInfo {
         prn: contains_any(
             &text,
-            &["prn", "p.r.n", "sos", "ตามอาการ", "เมื่อมีอาการ", "เมื่อจำเป็น"],
+            &[
+                "prn",
+                "p.r.n",
+                "sos",
+                "ตามอาการ",
+                "เมื่อมีอาการ",
+                "เมื่อจำเป็น",
+                "นอนไม่หลับ",
+                "เวลานอนไม่หลับ",
+                "เมื่อนอนไม่หลับ",
+                "ถ้านอนไม่หลับ",
+            ],
         ),
         ..SigInfo::default()
     };
@@ -258,14 +287,23 @@ fn parse_sig(raw: &str) -> SigInfo {
         info.times_per_day = word_frequency(&text);
     }
 
-    // "วันละ 3 ครั้ง" / "ทุก 8 ชั่วโมง"
+    // "วันละ 3 ครั้ง" / "วันละ 2 เวลา" / "ทุก 8 ชั่วโมง"
     if info.times_per_day.is_none() {
         info.times_per_day = thai_frequency(&text);
     }
 
-    // "1 tab" / "2 tabs" / "1 เม็ด"
+    // "ก่อนนอน" is a once-nightly instruction unless the sig also says the
+    // medicine is used only when needed. A PRN bedtime sig is left unestimated.
+    if info.times_per_day.is_none()
+        && !info.prn
+        && contains_any(&text, &["ก่อนนอน", "เข้านอน", "เวลานอน"])
+    {
+        info.times_per_day = Some(1.0);
+    }
+
+    // "ครั้งละ 2 เม็ด" / "ครั้งละ ครึ่ง เม็ด" / "ครั้งละ 1/2 เม็ด"
     if info.dose_units.is_none() {
-        info.dose_units = dosage_unit_pattern(&text);
+        info.dose_units = thai_dose_pattern(&text).or_else(|| dosage_unit_pattern(&text));
     }
 
     // If the frequency is explicit but the dose is not, one dosage unit is a
@@ -391,6 +429,46 @@ fn thai_frequency(text: &str) -> Option<f64> {
     None
 }
 
+fn thai_dose_pattern(text: &str) -> Option<f64> {
+    let idx = text.find("ครั้งละ")?;
+    let rest = &text[idx + "ครั้งละ".len()..];
+    let dose_segment = rest.find("วันละ").map(|end| &rest[..end]).unwrap_or(rest);
+    quantity_prefix(dose_segment)
+}
+
+fn quantity_prefix(text: &str) -> Option<f64> {
+    let text =
+        text.trim_start_matches(|c: char| c.is_whitespace() || matches!(c, '·' | ':' | '-' | '•'));
+    for (word, value) in [
+        ("ครึ่ง", 0.5),
+        ("หนึ่ง", 1.0),
+        ("สอง", 2.0),
+        ("สาม", 3.0),
+        ("สี่", 4.0),
+        ("ห้า", 5.0),
+    ] {
+        if text.starts_with(word) {
+            return Some(value);
+        }
+    }
+    if text.starts_with('½') {
+        return Some(0.5);
+    }
+    if text.starts_with('¼') {
+        return Some(0.25);
+    }
+
+    let (value, end) = first_number(text)?;
+    let rest = text[end..].trim_start();
+    if let Some(rest) = rest.strip_prefix('/')
+        && let Some((denominator, _)) = first_number(rest.trim_start())
+        && denominator > 0.0
+    {
+        return Some(value / denominator);
+    }
+    (value > 0.0).then_some(value)
+}
+
 fn dosage_unit_pattern(text: &str) -> Option<f64> {
     let idx = text.find("tab").or_else(|| text.find("cap"))?;
     let before = &text[..idx];
@@ -473,6 +551,75 @@ mod tests {
         let d = estimate_dose("500 mg", "เม็ด", "1 เม็ด วันละ 3 ครั้ง", 30.0);
         assert_eq!(d.units_per_day, Some(3.0));
         assert_eq!(d.mg_per_day, Some(1500.0));
+
+        let two_times = estimate_dose(
+            "500 mg",
+            "เม็ด",
+            "ครั้งละ 1 เม็ด · วันละ 2 เวลา หลังอาหาร · เช้า-เย็น",
+            30.0,
+        );
+        assert_eq!(two_times.units_per_day, Some(2.0));
+        assert!((two_times.days_supply.unwrap() - 15.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn parses_thai_dose_from_khrang_la() {
+        let one = estimate_dose(
+            "500 mg",
+            "เม็ด",
+            "รับประทาน ครั้งละ 1 เม็ด · วันละ 1 ครั้ง · ก่อนนอน",
+            15.0,
+        );
+        assert_eq!(one.units_per_day, Some(1.0));
+        assert!((one.days_supply.unwrap() - 15.0).abs() < 0.01);
+        assert!(one.days_supply_note.is_empty());
+
+        let two = estimate_dose(
+            "500 mg",
+            "เม็ด",
+            "รับประทาน ครั้งละ 2 เม็ด · วันละ 1 ครั้ง หลังอาหาร · เช้า",
+            30.0,
+        );
+        assert_eq!(two.units_per_day, Some(2.0));
+        assert!((two.days_supply.unwrap() - 15.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn parses_half_tablet_and_fractional_tablet() {
+        let half_word = estimate_dose(
+            "500 mg",
+            "เม็ด",
+            "รับประทานครั้งละ ครึ่ง เม็ด · วันละ 2 ครั้ง หลังอาหาร · เช้า - ก่อนนอน",
+            30.0,
+        );
+        assert_eq!(half_word.units_per_day, Some(1.0));
+        assert!((half_word.days_supply.unwrap() - 30.0).abs() < 0.01);
+
+        let half_fraction =
+            estimate_dose("500 mg", "เม็ด", "รับประทานครั้งละ 1/2 เม็ด · วันละ 2 ครั้ง", 30.0);
+        assert_eq!(half_fraction.units_per_day, Some(1.0));
+        assert!((half_fraction.days_supply.unwrap() - 30.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn scheduled_bedtime_counts_as_once_daily() {
+        let d = estimate_dose("500 mg", "เม็ด", "รับประทานครั้งละ 1 เม็ด · ก่อนนอน", 30.0);
+        assert_eq!(d.units_per_day, Some(1.0));
+        assert!((d.days_supply.unwrap() - 30.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn prn_bedtime_is_not_given_a_days_estimate() {
+        let d = estimate_dose(
+            "500 mg",
+            "เม็ด",
+            "รับประทานครั้งละ 1 เม็ด · ก่อนนอน · เวลานอนไม่หลับ",
+            30.0,
+        );
+        assert_eq!(d.units_per_day, None);
+        assert_eq!(d.days_supply, None);
+        assert_eq!(d.days_supply_note, "ตามอาการ");
+        assert!(d.note.contains("ใช้ตามอาการ"));
     }
 
     #[test]
@@ -481,12 +628,19 @@ mod tests {
         assert_eq!(e.units_per_day, Some(15.0));
         assert_eq!(e.mg_per_day, Some(750.0));
         assert!((e.days_supply.unwrap() - 10.0).abs() < 0.01);
+
+        let spoon = estimate_dose("250 mg/5 ml", "mL", "1 ช้อนชา x 3", 150.0);
+        assert_eq!(spoon.units_per_day, Some(15.0));
+        assert_eq!(spoon.mg_per_day, Some(750.0));
+        assert!((spoon.days_supply.unwrap() - 10.0).abs() < 0.01);
     }
 
     #[test]
     fn ambiguous_liquid_is_not_guessed() {
         let e = estimate_dose("250 mg/5 ml", "mL", "1x3", 100.0);
-        assert_eq!(e.mg_per_day, None);
+        assert_eq!(e.units_per_day, None);
+        assert_eq!(e.days_supply, None);
+        assert_eq!(e.days_supply_note, "ไม่ระบุปริมาตร");
         assert!(e.note.contains("ยาน้ำ"));
     }
 
@@ -501,6 +655,6 @@ mod tests {
     fn unreadable_sig_is_reported_not_guessed() {
         let e = estimate_dose("500 mg", "Tab", "ตามแพทย์สั่ง", 10.0);
         assert_eq!(e.units_per_day, None);
-        assert!(e.note.contains("อ่านวิธีใช้ไม่ชัด"));
+        assert!(e.note.contains("ไม่ระบุความถี่"));
     }
 }

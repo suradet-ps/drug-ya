@@ -2380,17 +2380,17 @@ h1, h2, h3, h4, b, strong { font-weight: 600; }
 
 .spin { display: inline-flex; }
 
-/* ----- Directions for use: complete sig + structured summary ------------- */
+/* ----- Directions for use and derived days supply ------------------------ */
 .order-table th:first-child,
-.order-table td:first-child { width: 34%; }
+.order-table td:first-child { width: 33%; }
 .order-table th:nth-child(2),
-.order-table td:nth-child(2) { width: 36%; }
+.order-table td:nth-child(2) { width: 35%; }
 .order-table th:nth-child(3),
 .order-table td:nth-child(3) { width: 12%; }
 .order-table th:nth-child(4),
-.order-table td:nth-child(4) { width: 8%; }
+.order-table td:nth-child(4) { width: 11%; }
 .order-table th:nth-child(5),
-.order-table td:nth-child(5) { width: 10%; }
+.order-table td:nth-child(5) { width: 9%; }
 .sig-cell { vertical-align: top; }
 .sig-text {
   color: #3a4036;
@@ -2401,6 +2401,12 @@ h1, h2, h3, h4, b, strong { font-weight: 600; }
 }
 .sig-empty {
   color: #898f82;
+}
+.days-cell { white-space: nowrap; }
+.days-note {
+  color: #5f6658;
+  font-family: var(--font-ui);
+  font-size: 10px;
 }
 
 /* ==========================================================================

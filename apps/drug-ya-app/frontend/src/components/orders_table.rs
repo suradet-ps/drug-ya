@@ -98,7 +98,13 @@ fn VisitGroup(visit: TodayVisit, orders: Vec<OrderLine>, review: ReviewResult) -
                             <th scope="col">"ยา"</th>
                             <th scope="col">"วิธีใช้"</th>
                             <th scope="col" class="num">"จำนวน"</th>
-                            <th scope="col" class="num">"วัน"</th>
+                            <th
+                                scope="col"
+                                class="num"
+                                title="ประมาณจากจำนวนยา ÷ ขนาดต่อวัน; ไม่ใช่ข้อมูลที่ HOSxP เก็บไว้"
+                            >
+                                "วัน"
+                            </th>
                             <th scope="col">"ตรวจ"</th>
                         </tr>
                     </thead>
@@ -127,6 +133,25 @@ fn OrderRow(order: OrderLine, severity: Option<Severity>, finding_count: usize) 
         .map(|severity| format!("order-row order-row--{}", severity.code()))
         .unwrap_or_else(|| "order-row".into());
     let sig = order.sig.trim().to_string();
+    let days_label = match order.days_supply {
+        Some(days) => format!("~{}", thai::format_qty(days)),
+        None => {
+            let note = order.days_supply_note.trim();
+            if note.is_empty() {
+                "—".to_string()
+            } else {
+                note.to_string()
+            }
+        }
+    };
+    let days_is_note = order.days_supply.is_none() && !order.days_supply_note.trim().is_empty();
+    let days_title = if order.days_supply.is_some() {
+        "ประมาณจากจำนวนยา ÷ ขนาดต่อวัน; ไม่ใช่ข้อมูลที่ HOSxP เก็บไว้".to_string()
+    } else if !order.dose_note.trim().is_empty() {
+        order.dose_note.clone()
+    } else {
+        "ไม่มีข้อมูลเพียงพอสำหรับประมาณจำนวนวัน".to_string()
+    };
     view! {
         <tr class=row_class>
             <td>
@@ -154,8 +179,8 @@ fn OrderRow(order: OrderLine, severity: Option<Severity>, finding_count: usize) 
                 }}
             </td>
             <td class="num mono">{format!("{} {}", thai::format_qty(order.qty), order.units.trim())}</td>
-            <td class="num">
-                {order.days_supply.map(|days| format!("~{}", thai::format_qty(days))).unwrap_or_else(|| "—".into())}
+            <td class="num days-cell" title=days_title>
+                <span class:days-note=days_is_note>{days_label}</span>
             </td>
             <td>
                 {match severity {

@@ -306,9 +306,12 @@ Typography:
   quantity, estimated days, finding severity. The directions cell shows the
   complete joined HOSxP sig (`drugusage` + `sp_use` names) as source text,
   including timing and meal instructions. Text wraps rather than truncating.
-  No generated shorthand replaces the prescriber's wording. Visit grouping is
-  a quiet grey header with an olive queue badge.
-  A severity color appears as a 3 px left border, not a full-row wash.
+  No generated shorthand replaces the prescriber's wording. Estimated days
+  are shown with `~` only when the sig has both a dose and a frequency; PRN
+  sigs show `ตามอาการ`, missing frequency shows `ไม่ระบุความถี่`, and an
+  unparsed dose shows `อ่านไม่ชัด`. Visit grouping is a quiet grey header with
+  an olive queue badge. A severity color appears as a 3 px left border, not a
+  full-row wash.
 - **Finding card** - white card with a 3 px severity bar; a 22 px olive-to-sage
   category icon tile, category label,
   severity badge, title, detail, factor/drug chips, grey recommendation box,

@@ -427,6 +427,7 @@ impl HosxpClient {
                 known: resolution.known,
                 daily_dose_mg: dose.mg_per_day,
                 days_supply: dose.days_supply,
+                days_supply_note: dose.days_supply_note,
                 dose_note: dose.note,
             });
         }

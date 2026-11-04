@@ -337,6 +337,9 @@ pub struct OrderLine {
     pub daily_dose_mg: Option<f64>,
     /// Estimated days supply from qty and the parsed sig.
     pub days_supply: Option<f64>,
+    /// Short reason when a days-supply estimate is unavailable.
+    #[serde(default)]
+    pub days_supply_note: String,
     /// How the dose was interpreted, or why it could not be.
     pub dose_note: String,
 }
