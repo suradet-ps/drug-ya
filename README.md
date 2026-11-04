@@ -185,10 +185,11 @@ read-only without exceptions, no plaintext credentials, no patient data
 on disk, and a sign-off before clinical use. The design language lives in
 [`docs/DESIGN.md`](docs/DESIGN.md).
 
-**Status** - CI gates every change: `cargo fmt --check`, `clippy
---workspace --all-targets -- -D warnings`, DB-free host tests, and a
-release WASM build of the Leptos frontend.
-[Watch the gates](.github/workflows/ci.yml).
+**Status** - CI gates every change: `cargo fmt --check`, native and wasm32
+`clippy -- -D warnings`, DB-free host tests, `cargo deny`, and a release
+WASM build of the Leptos frontend. A separate test-build job compiles the
+Tauri app, and tagged releases are published for Windows, Linux, and macOS.
+[Watch the gates](.github/workflows).
 
 ---
 

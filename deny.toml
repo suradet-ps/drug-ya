@@ -1,0 +1,65 @@
+# cargo-deny configuration for Drug-Ya
+# https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+targets = []
+
+[output]
+feature-depth = 1
+
+[advisories]
+ignore = [
+  # Marvin Attack timing sidechannel on rsa (transitive dependency of
+  # sqlx-mysql for caching_sha2_password auth). Drug-Ya connects to the
+  # hospital LAN; the advisory itself says local use on a non-compromised
+  # computer is acceptable, and no patched release exists.
+  { id = "RUSTSEC-2023-0071", reason = "sqlx-mysql RSA auth exchange; local hospital LAN" },
+  # proc-macro-error unmaintained (transitive dependency of glib/gtk)
+  "RUSTSEC-2024-0370",
+  # paste unmaintained (transitive dependency of glib/gtk)
+  "RUSTSEC-2024-0436",
+  # zvariant, zvariant_derive, and zbus_names are unmaintained (transitive
+  # dependencies of keyring's zbus backend on Linux). These are maintenance
+  # advisories, not vulnerabilities.
+  { id = "RUSTSEC-2026-0370", reason = "keyring zbus backend; no safe upgrade until zbus 6" },
+  { id = "RUSTSEC-2026-0371", reason = "keyring zbus backend; no safe upgrade until zbus 6" },
+  { id = "RUSTSEC-2026-0372", reason = "keyring zbus backend; no safe upgrade until zbus 6" },
+]
+
+[licenses]
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CDLA-Permissive-2.0",
+  "ISC",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "Zlib",
+  "BSL-1.0",
+  "OpenSSL",
+  "Unicode-TOU",
+  "CC0-1.0",
+  "LGPL-2.1-or-later",
+  "LGPL-3.0-or-later",
+  "MPL-2.0",
+]
+confidence-threshold = 0.92
+
+[licenses.private]
+ignore = false
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

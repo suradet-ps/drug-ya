@@ -24,14 +24,14 @@ pub fn stamp_thai() -> String {
     #[cfg(target_arch = "wasm32")]
     {
         let date = js_sys::Date::new_0();
-        return format!(
+        format!(
             "{:02}/{:02}/{} {:02}:{:02}",
             date.get_date(),
             date.get_month() + 1,
             date.get_full_year() + 543,
             date.get_hours(),
             date.get_minutes()
-        );
+        )
     }
     #[cfg(not(target_arch = "wasm32"))]
     {

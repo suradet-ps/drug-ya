@@ -2,36 +2,119 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  rust-check:
+    name: Rust Format, Clippy and Test
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          targets: wasm32-unknown-unknown
+          persist-credentials: false
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+      - name: Install system dependencies (Tauri on Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
 
-      - name: Format
+      - name: Create dist placeholder (required by tauri::generate_context!)
+        run: |
+          mkdir -p apps/drug-ya-app/frontend/dist
+          touch apps/drug-ya-app/frontend/dist/index.html
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: ". -> target"
+
+      - name: Cargo format check
         run: cargo fmt --all -- --check
 
-      - name: Clippy
+      - name: Cargo clippy (deny warnings)
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: Tests (DB-free)
+      - name: Cargo test (DB-free)
         run: cargo test --workspace
 
-      - name: Install Trunk
-        run: cargo install trunk --locked
+  wasm-frontend:
+    name: WASM Frontend
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Build frontend (WASM)
+      - name: Install Rust stable (wasm target)
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: ". -> target"
+
+      - name: Cargo clippy (wasm32, deny warnings)
+        run: cargo clippy -p drug-ya-frontend --target wasm32-unknown-unknown --all-targets -- -D warnings
+
+      - name: Install Trunk
+        run: |
+          for attempt in 1 2 3 4; do
+            curl -LsSf \
+              https://github.com/trunk-rs/trunk/releases/download/v0.21.14/trunk-x86_64-unknown-linux-gnu.tar.gz \
+              -o trunk.tar.gz \
+              && tar -xzf trunk.tar.gz \
+              && sudo mv trunk /usr/local/bin/ \
+              && break
+            echo "trunk download failed (attempt $attempt/4) - retrying in 10s"
+            sleep 10
+          done
+          test -x /usr/local/bin/trunk
+
+      - name: Build frontend (trunk)
         working-directory: apps/drug-ya-app
-        run: trunk build frontend/index.html --release
+        run: |
+          for attempt in 1 2 3 4; do
+            trunk build frontend/index.html --release && exit 0
+            echo "trunk build failed (attempt $attempt/4) - retrying in 10s"
+            sleep 10
+          done
+          exit 1
+
+  cargo-deny:
+    name: Dependency and License Check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+
+      - name: Cargo deny
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check all
+          manifest-path: Cargo.toml
