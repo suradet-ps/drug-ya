@@ -186,44 +186,58 @@ in-app mark keeps its olive identity; it is the only filled mark in the UI and
 receives no additional outer shadow.
 
 Brand personality: a confident clinical instrument, not a consumer wellness
-app. The shell follows a Webflow-inspired system:
+app. The shell keeps the Webflow-inspired geometry and type discipline, with
+a palette taken from the supplied mark:
 
-- a generous **white canvas** with **near-black `#080808`** for primary CTAs,
-  headings, ink, and the search rail;
-- one **five-stop accent palette** used sparingly as surface fills: purple
-  `#7A3DFF`, pink `#ED52CB`, blue `#3B89FF`, orange `#FF6B00`, green `#00D722`;
+- a generous **white canvas** with **deep olive-black `#1A1C1A`** for text,
+  headings, and the dark feature bands;
+- **olive `#556B2F`** as the primary action and strong-accent colour;
+- **sage `#8FBC6A`** as the light accent on dark surfaces and focus rings;
+- one **five-stop olive-to-sage palette** used sparingly as surface fills:
+  `#283324`, `#35452A`, `#556B2F`, `#6E8345`, `#8FBC6A`;
 - a weight ceiling of **600**, tight tracking on display type, and uppercase
   eyebrows with positive tracking;
 - **4 px** buttons and inputs, **8 px** cards and panels. No pill CTAs.
-- Severity stays semantic: red `#EE1D36`, orange `#FF6B00`, yellow `#FFAE13`,
-  green `#008F18`, info blue `#146EF5`.
+- Severity stays semantic and muted: red `#A92A20`, orange `#AD5209`,
+  amber `#8A6A00`, green `#3F6B3A`, info `#4C5A43`.
 
-The chromatic accents appear only on the 22 px finding-category icon tiles,
-the five-stop accent rule on the login and empty states, and the empty-state
-mark. They are never button backgrounds.
+The olive-to-sage accents appear only on the 22 px finding-category icon
+tiles, the five-stop accent rule on the login and empty states, and the
+decorative login preview. Primary buttons use olive, never a chromatic
+accent.
 
 ### 3.2 Tokens
 
 | Token | Value | Role |
 |---|---|---|
-| `--wf-ink` / `--ink` | `#080808` | primary text, headings, primary CTA |
-| `--wf-body` / `--slate` | `#363636` | body text |
-| `--wf-body-mid` / `--muted` | `#5A5A5A` | secondary text |
-| `--wf-mute-soft` / `--muted-2` | `#898989` | meta, placeholders |
-| `--wf-hairline` / `--hairline` | `#D8D8D8` | 1 px borders |
-| `--bone` / `--paper` | `#FFFFFF` | canvas and cards |
-| `--cream` | `#F7F7F7` | quiet fills, selected tabs |
-| `--accent-purple` | `#7A3DFF` | category tile |
-| `--accent-pink` | `#ED52CB` | category tile |
-| `--accent-blue` | `#3B89FF` | category tile, focus ring on black |
-| `--accent-orange` | `#FF6B00` | category tile |
-| `--accent-green` | `#00D722` | category tile |
-| `--accent-yellow` | `#FFAE13` | warning tile, unsigned pack |
-| `--danger` | `#EE1D36` | critical |
-| `--high` | `#FF6B00` | high |
-| `--warn` | `#9A6A00` | moderate / warnings |
-| `--ok` | `#008F18` | stable / checked |
-| `--info` | `#146EF5` | info findings |
+| `--wf-ink` / `--ink` | `#1A1C1A` | primary text, headings, dark bands |
+| `--wf-body` / `--slate` | `#3A4036` | body text |
+| `--wf-body-mid` / `--muted` | `#5F6658` | secondary text |
+| `--wf-mute-soft` / `--muted-2` | `#898F82` | meta, placeholders |
+| `--wf-hairline` / `--hairline` | `#DFE3D8` | 1 px borders |
+| `--bone` / `--paper` | `#FBFCF8` / `#FFFFFF` | canvas and cards |
+| `--cream` | `#F5F7F1` | quiet fills, selected tabs |
+| `--olive-800` | `#283324` | deepest surface accent |
+| `--olive-700` | `#35452A` | strong accent |
+| `--olive-600` | `#556B2F` | primary CTA, active filters, queue badge |
+| `--olive-500` | `#6E8345` | secondary accent |
+| `--sage` | `#8FBC6A` | light accent, focus rings, success on dark |
+| `--accent-purple` | `#283324` | category tile |
+| `--accent-pink` | `#35452A` | category tile |
+| `--accent-blue` | `#556B2F` | category tile |
+| `--accent-orange` | `#6E8345` | category tile |
+| `--accent-green` | `#8FBC6A` | category tile |
+| `--accent-yellow` | `#C2D9A6` | light category tile |
+| `--danger` | `#A92A20` | critical |
+| `--high` | `#AD5209` | high |
+| `--warn` | `#8A6A00` | moderate / warnings |
+| `--ok` | `#3F6B3A` | stable / checked |
+| `--info` | `#4C5A43` | info findings |
+
+The legacy `--accent-purple`, `--accent-pink`, `--accent-blue`, and
+`--accent-orange` names are retained for component compatibility; their
+values are now the five olive-to-sage stops above, not a separate chromatic
+palette.
 
 Severity is carried by **both** color and text/icon; color is never the only
 signal.
@@ -252,7 +266,7 @@ Typography:
 │ title · date                    status · officer · settings · logout   │
 ├──────────────────────┬──────────────────────────────────────────────────┤
 │ search rail (360px)  │ workspace (scroll)                               │
-│  black feature band  │  patient header                                  │
+│  deep olive band     │  patient header                                  │
 │  brand               │  warning line                                    │
 │  search + mode       │  clinical summary (5 stats)                      │
 │  results             │  context bar (allergy / dx / pregnancy / PMH)    │
@@ -273,13 +287,13 @@ Typography:
 
 ### 3.4 Components
 
-- **Login** - black brand band with the mark, a five-stop accent rule, a
+- **Login** - deep olive brand band with the mark, a five-stop accent rule, a
   short two-line headline, one decorative review-card preview, and a privacy
   footnote. A light-grey panel carries one white auth card. Connection status
   sits in the toolbar only when a connection is saved; an unconfigured site
   sees a compact notice in the card instead. No marketing paragraph, feature
   chips, or version footer.
-- **Search rail** - the single black feature band: brand lockup, dark search
+- **Search rail** - the single deep olive feature band: brand lockup, dark search
   field, mode select, result cards, instructions, read-only footer.
 - **Patient header** - white card, 4 px avatar tile, 24 px name, mono
   identifiers, visit chips, unsigned-pack link, checked-at and refresh.
@@ -293,10 +307,10 @@ Typography:
   complete joined HOSxP sig (`drugusage` + `sp_use` names) as source text,
   including timing and meal instructions. Text wraps rather than truncating.
   No generated shorthand replaces the prescriber's wording. Visit grouping is
-  a quiet grey header with a black queue badge.
+  a quiet grey header with an olive queue badge.
   A severity color appears as a 3 px left border, not a full-row wash.
-- **Finding card** - white card with a 3 px severity bar; a 22 px chromatic
-  category icon tile (purple/pink/blue/orange/green/yellow), category label,
+- **Finding card** - white card with a 3 px severity bar; a 22 px olive-to-sage
+  category icon tile, category label,
   severity badge, title, detail, factor/drug chips, grey recommendation box,
   evidence behind a disclosure, acknowledgement button.
 - **Findings header** - title plus one action chip and a dot count row; no
@@ -306,7 +320,7 @@ Typography:
 - **Settings modal** - 1020 px max, dark blurred backdrop, header, tabs, scroll
   body, fixed footer. Rule rows are dense but readable: switch, title,
   id/source, severity select, threshold input.
-- **Buttons** - black primary fill, white hairline quiet button, green-tinted
+- **Buttons** - olive primary fill, white hairline quiet button, sage-tinted
   acknowledged state. 4 px radius. Focus ring 2 px ink plus a 3 px soft halo.
 - **Icons** - 1.8 px line icons; the logo is the only filled mark.
 
@@ -385,9 +399,9 @@ Typography:
 
 ## 6. Why this looks the way it does
 
-- The **left black rail** is the one polarity-flipped feature band. It keeps
-  patient search separate from the clinical canvas and matches the near-black
-  primary used for every CTA.
+- The **left deep olive rail** is the one polarity-flipped feature band. It
+  keeps patient search separate from the clinical canvas and carries the same
+  olive-to-sage family as the master mark.
 - The **white canvas** and hairline cards make the clinical content the
   interface; there is no decorative colour wash competing with findings.
 - The **five-stop accent palette** is deliberately constrained to category
