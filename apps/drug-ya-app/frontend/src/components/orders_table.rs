@@ -126,10 +126,7 @@ fn OrderRow(order: OrderLine, severity: Option<Severity>, finding_count: usize) 
     let row_class = severity
         .map(|severity| format!("order-row order-row--{}", severity.code()))
         .unwrap_or_else(|| "order-row".into());
-    let sig_summary = order.sig_summary.trim().to_string();
-    let sig_raw = order.sig.trim().to_string();
-    let has_summary = !sig_summary.is_empty();
-    let has_raw = !sig_raw.is_empty();
+    let sig = order.sig.trim().to_string();
     view! {
         <tr class=row_class>
             <td>
@@ -148,17 +145,12 @@ fn OrderRow(order: OrderLine, severity: Option<Severity>, finding_count: usize) 
                 </div>
             </td>
             <td class="sig-cell">
-                {has_summary.then(|| view! {
-                    <div class="sig-summary">{sig_summary.clone()}</div>
-                })}
-                {if has_raw {
-                    view! { <div class="sig-text">{sig_raw.clone()}</div> }.into_any()
-                } else if !has_summary {
+                {if sig.is_empty() {
                     view! {
                         <span class="sig-empty" title="HOSxP ไม่มีข้อความวิธีใช้">"—"</span>
                     }.into_any()
                 } else {
-                    ().into_any()
+                    view! { <div class="sig-text">{sig.clone()}</div> }.into_any()
                 }}
             </td>
             <td class="num mono">{format!("{} {}", thai::format_qty(order.qty), order.units.trim())}</td>

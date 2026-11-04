@@ -187,8 +187,9 @@ The order query selects all six name columns (`drugusage.name1..3` and
 `sp_use.name1..3`). The connector joins them in source order, removes exact
 duplicates, and drops a short value when a longer value already contains it.
 The joined string is both the complete **วิธีใช้** shown to the pharmacist and
-the input to dose parsing. A structured summary such as `1 × 3/วัน` is shown
-above the raw HOSxP text when the dose and frequency are parseable.
+the input to dose parsing. The UI shows this source text as-is; it does not
+replace it with a generated shorthand such as `1 × 3/วัน`, which can lose the
+administration timing and meal instructions.
 
 If these tables are missing, orders load without sig and dose review is
 partial. The old "pick only name3/name2/name1" behaviour was incomplete: it

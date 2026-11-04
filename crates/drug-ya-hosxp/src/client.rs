@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use chrono::NaiveDate;
 use drug_ya_core::dictionary::resolve_drug;
-use drug_ya_core::dose::{estimate_dose, format_sig_summary};
+use drug_ya_core::dose::estimate_dose;
 use drug_ya_core::model::{
     AllergyRecord, ClinicalContext, DiagnosisRecord, LabFlag, LabKind, LabValue, OrderLine,
     Patient, PregnancyStatus, ReviewDataset, Sex, TodayVisit,
@@ -399,7 +399,6 @@ impl HosxpClient {
                 row.sp_name3,
             ]);
             let dose = estimate_dose(&row.strength, &row.units, &sig, qty);
-            let sig_summary = format_sig_summary(&dose);
             let base_id = format!("{}:{}:{}", row.vn, row.item_no, row.icode);
             let count = seen.entry(base_id.clone()).or_insert(0);
             *count += 1;
@@ -416,7 +415,6 @@ impl HosxpClient {
                 strength: row.strength,
                 units: row.units,
                 sig,
-                sig_summary,
                 qty,
                 item_no: row.item_no,
                 doctor_name: row.doctor_name,

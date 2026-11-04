@@ -313,9 +313,6 @@ pub struct OrderLine {
     pub units: String,
     /// Complete directions for use joined from every HOSxP sig field.
     pub sig: String,
-    /// Structured display summary, e.g. `1 × 3/วัน`; empty when unparsed.
-    #[serde(default)]
-    pub sig_summary: String,
     /// Quantity.
     pub qty: f64,
     /// HOSxP item number.

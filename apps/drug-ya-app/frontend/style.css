@@ -2391,17 +2391,10 @@ h1, h2, h3, h4, b, strong { font-weight: 600; }
 .order-table th:nth-child(5),
 .order-table td:nth-child(5) { width: 10%; }
 .sig-cell { vertical-align: top; }
-.sig-summary {
-  color: #080808;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
-}
 .sig-text {
-  margin-top: 2px;
-  color: #5a5a5a;
-  font-size: 11.5px;
-  line-height: 1.5;
+  color: #363636;
+  font-size: 12px;
+  line-height: 1.55;
   white-space: normal;
   overflow-wrap: anywhere;
 }

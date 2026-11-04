@@ -290,9 +290,10 @@ Typography:
   `force_no_order`), ICD-10 chips, pregnancy selector, PMH disclosure.
 - **Order table** - compact 5-column table: drug/strength, directions for use,
   quantity, estimated days, finding severity. The directions cell shows the
-  complete joined HOSxP sig (`drugusage` + `sp_use` names) and, when parseable,
-  a structured summary above it (`1 × 3/วัน`). Text wraps rather than
-  truncating. Visit grouping is a quiet grey header with a black queue badge.
+  complete joined HOSxP sig (`drugusage` + `sp_use` names) as source text,
+  including timing and meal instructions. Text wraps rather than truncating.
+  No generated shorthand replaces the prescriber's wording. Visit grouping is
+  a quiet grey header with a black queue badge.
   A severity color appears as a 3 px left border, not a full-row wash.
 - **Finding card** - white card with a 3 px severity bar; a 22 px chromatic
   category icon tile (purple/pink/blue/orange/green/yellow), category label,

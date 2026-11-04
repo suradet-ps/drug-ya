@@ -12,12 +12,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DoseEstimate {
-    /// Dosage units per administration (tablets, capsules, or mL).
-    pub dose_per_admin: Option<f64>,
-    /// Times per day stated by the sig.
-    pub times_per_day: Option<f64>,
-    /// Whether the sig says to use the medicine only as needed (PRN).
-    pub prn: bool,
     /// Dosage units per day (tablets, capsules, or mL).
     pub units_per_day: Option<f64>,
     /// Milligrams of active drug per day, when this can be derived safely.
@@ -26,29 +20,6 @@ pub struct DoseEstimate {
     pub days_supply: Option<f64>,
     /// Thai explanation for the UI.
     pub note: String,
-}
-
-/// Format the structured sig summary used beside the raw HOSxP directions.
-///
-/// Returns an empty string when either the per-administration dose or the
-/// daily frequency could not be parsed; the raw sig still stays visible.
-pub fn format_sig_summary(estimate: &DoseEstimate) -> String {
-    match (estimate.dose_per_admin, estimate.times_per_day) {
-        (Some(dose), Some(frequency))
-            if dose.is_finite() && frequency.is_finite() && dose > 0.0 && frequency > 0.0 =>
-        {
-            let mut text = format!(
-                "{} × {}/วัน",
-                crate::thai::format_qty(dose),
-                crate::thai::format_qty(frequency)
-            );
-            if estimate.prn {
-                text.push_str(" (ตามอาการ)");
-            }
-            text
-        }
-        _ => String::new(),
-    }
 }
 
 /// Interpret one order.
@@ -112,9 +83,6 @@ pub fn estimate_dose(strength: &str, units: &str, sig: &str, qty: f64) -> DoseEs
     };
 
     DoseEstimate {
-        dose_per_admin: sig_info.dose_units,
-        times_per_day: sig_info.times_per_day,
-        prn: sig_info.prn,
         units_per_day,
         mg_per_day,
         days_supply,
@@ -503,32 +471,8 @@ mod tests {
     #[test]
     fn parses_thai_frequency() {
         let d = estimate_dose("500 mg", "เม็ด", "1 เม็ด วันละ 3 ครั้ง", 30.0);
-        assert_eq!(d.dose_per_admin, Some(1.0));
-        assert_eq!(d.times_per_day, Some(3.0));
         assert_eq!(d.units_per_day, Some(3.0));
         assert_eq!(d.mg_per_day, Some(1500.0));
-    }
-
-    #[test]
-    fn formats_a_structured_sig_summary() {
-        let d = estimate_dose("500 mg", "Tab", "1x3", 30.0);
-        assert_eq!(format_sig_summary(&d), "1 × 3/วัน");
-
-        let thai = estimate_dose("500 mg", "เม็ด", "1 เม็ด วันละ 3 ครั้ง", 30.0);
-        assert_eq!(format_sig_summary(&thai), "1 × 3/วัน");
-    }
-
-    #[test]
-    fn unparsed_sig_has_no_structured_summary() {
-        let d = estimate_dose("500 mg", "Tab", "ตามแพทย์สั่ง", 10.0);
-        assert_eq!(format_sig_summary(&d), "");
-    }
-
-    #[test]
-    fn prn_sig_keeps_the_as_needed_caveat() {
-        let d = estimate_dose("500 mg", "Tab", "1x3 ตามอาการ", 30.0);
-        assert!(d.prn);
-        assert_eq!(format_sig_summary(&d), "1 × 3/วัน (ตามอาการ)");
     }
 
     #[test]

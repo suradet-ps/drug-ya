@@ -1389,7 +1389,6 @@ mod tests {
     fn order(name: &str, strength: &str, units: &str, sig: &str, qty: f64, id: &str) -> OrderLine {
         let resolution = resolve_drug(name);
         let dose = estimate_dose(strength, units, sig, qty);
-        let sig_summary = crate::dose::format_sig_summary(&dose);
         OrderLine {
             line_id: id.into(),
             vn: "VN1".into(),
@@ -1398,7 +1397,6 @@ mod tests {
             strength: strength.into(),
             units: units.into(),
             sig: sig.into(),
-            sig_summary,
             qty,
             item_no: 1,
             doctor_name: "นพ.ทดสอบ".into(),
